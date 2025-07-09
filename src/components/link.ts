@@ -23,7 +23,7 @@ const onLinkClick = (event: MouseEvent) => {
     const href = target.getAttribute("href");
 
     if (href) {
-      router.push(href);
+      router.navigate(href);
     }
   }
 };

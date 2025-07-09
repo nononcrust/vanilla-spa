@@ -1,7 +1,7 @@
-import { createRouter, routes } from "./router";
+import { createBrowserRouter, routes } from "./router";
 
-const app = document.getElementById("app")!;
+const root = document.getElementById("app")!;
 
-const router = createRouter(routes, app);
+const router = createBrowserRouter(routes, root);
 
 export { router };

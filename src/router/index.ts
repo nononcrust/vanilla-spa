@@ -1,9 +1,18 @@
 import { CounterPage } from "../pages/counter";
 import { HomePage } from "../pages/home";
 
-type Router = {
-  push: (path: Route["path"]) => void;
-  replace: (path: Route["path"]) => void;
+const PopStateEventType = "popstate";
+
+type To = string;
+
+type RouterNavigateOptions = {
+  replace?: boolean;
+};
+
+type NavigateFunction = (to: To, opts?: RouterNavigateOptions) => void;
+
+type DataRouter = {
+  navigate: NavigateFunction;
 };
 
 type Route = {
@@ -11,14 +20,10 @@ type Route = {
   component: string;
 };
 
-const createRoute = (props: { path: string; component: string }): Route => {
-  return {
-    path: props.path,
-    component: props.component,
-  };
-};
-
-export const createRouter = (routes: Route[], root: HTMLElement): Router => {
+export const createBrowserRouter = (
+  routes: Route[],
+  root: HTMLElement
+): DataRouter => {
   const matchRoute = (path: string): Route | null => {
     return routes.find((route) => route.path === path) ?? null;
   };
@@ -35,40 +40,45 @@ export const createRouter = (routes: Route[], root: HTMLElement): Router => {
     root.innerHTML = matchedRoute.component;
   };
 
-  const push = (path: Route["path"]) => {
-    window.history.pushState(null, "", path);
+  const push = (to: To) => {
+    window.history.pushState(null, "", to);
     render();
   };
 
-  const replace = (path: Route["path"]) => {
-    window.history.replaceState(null, "", path);
+  const replace = (to: To) => {
+    window.history.replaceState(null, "", to);
     render();
   };
 
-  const register = () => {
-    window.addEventListener("popstate", () => {
+  const navigate: NavigateFunction = (to, opts) => {
+    if (opts?.replace) {
+      replace(to);
+    } else {
+      push(to);
+    }
+  };
+
+  const listen = () => {
+    window.addEventListener(PopStateEventType, () => {
       render();
     });
-
-    render();
   };
 
-  register();
+  listen();
+  render();
 
   return {
-    push,
-    replace,
+    navigate,
   };
 };
 
-const homeRoute = createRoute({
-  path: "/",
-  component: HomePage(),
-});
-
-const counterRoute = createRoute({
-  path: "/counter",
-  component: CounterPage(),
-});
-
-export const routes = [homeRoute, counterRoute];
+export const routes = [
+  {
+    path: "/",
+    component: HomePage(),
+  },
+  {
+    path: "/counter",
+    component: CounterPage(),
+  },
+];
