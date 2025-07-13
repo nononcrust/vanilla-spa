@@ -13,6 +13,7 @@ type NavigateFunction = (to: To, opts?: RouterNavigateOptions) => void;
 
 type DataRouter = {
   navigate: NavigateFunction;
+  subscribe: () => () => void;
 };
 
 type Route = {
@@ -58,17 +59,25 @@ export const createBrowserRouter = (
     }
   };
 
-  const listen = () => {
-    window.addEventListener(PopStateEventType, () => {
+  const subscribe = () => {
+    const onPopState = () => {
       render();
-    });
-  };
+    };
 
-  listen();
-  render();
+    window.addEventListener(PopStateEventType, onPopState);
+
+    const unsubscribe = () => {
+      window.removeEventListener(PopStateEventType, onPopState);
+    };
+
+    render();
+
+    return unsubscribe;
+  };
 
   return {
     navigate,
+    subscribe,
   };
 };
 
